@@ -1,0 +1,11 @@
+Q1. What happens if users choose “Cancel”?
+
+If the user selects "Cancel," the program will display a message indicating that the user chose Cancel. This is handled in the code with the condition else if (choice == 2).
+
+
+Q2: How to customize the options for users?
+
+To customize the options, you can modify the options array in the showOptionDialog method. For example, if you only want two options "Yes" and "No", you can do:
+String[] options = {"Yes", "No"};
+Or if you want to use "I do" and "I don't":
+String[] options = {"I do", "I don't"};
