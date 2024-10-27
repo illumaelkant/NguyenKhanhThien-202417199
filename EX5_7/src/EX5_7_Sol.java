@@ -1,100 +1,108 @@
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.text.SimpleDateFormat;
+
+class Transaction {
+    String type;
+    double amount;
+    String date;
+
+    public Transaction(String type, double amount) {
+        this.type = type;
+        this.amount = amount;
+        this.date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+    }
+
+    @Override
+    public String toString() {
+        return type + " - " + String.format("%,.0f", amount) + " VND - " + date;
+    }
+}
 
 class BankAccount {
-    private String h;
-    private double b; 
-    private double m; 
-    private ArrayList<String> t; 
-    private int w; 
-    private static final int MAX_WITHDRAWALS = 3;
+    private String accountHolder;
+    private double balance;
+    private double monthlyInterestRate;
+    private ArrayList<Transaction> transactionHistory;
+    private int withdrawalCount;
+    private final int MAX_WITHDRAWALS = 3;
 
-    public BankAccount(String h, double b, double m) {
-        this.h = h;
-        this.b = b;
-        this.m = m;
-        this.t = new ArrayList<>();
-        this.w = 0;
+    public BankAccount(String accountHolder, double initialBalance, double monthlyInterestRate) {
+        this.accountHolder = accountHolder;
+        this.balance = initialBalance;
+        this.monthlyInterestRate = monthlyInterestRate;
+        this.transactionHistory = new ArrayList<>();
+        this.withdrawalCount = 0;
     }
 
-    public void d(double a) { 
-        if (a > 0) {
-            b += a;
-            logTransaction("Deposit", a);
-            System.out.println("Đã gửi " + formatCurrency(a));
+    // Getter for accountHolder
+    public String getAccountHolder() {
+        return accountHolder;
+    }
+
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+            transactionHistory.add(new Transaction("Deposit", amount));
+            System.out.println("Deposited " + String.format("%,.0f", amount) + " VND");
+        }
+    }
+
+    public void withdraw(double amount) {
+        if (withdrawalCount >= MAX_WITHDRAWALS) {
+            System.out.println("Withdraw " + String.format("%,.0f", amount) + " VND - Error: You have reached the monthly withdrawal limit.");
+            return;
+        }
+
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+            withdrawalCount++;
+            transactionHistory.add(new Transaction("Withdraw", amount));
+            System.out.println("Withdrew " + String.format("%,.0f", amount) + " VND");
         } else {
-            System.out.println("Lỗi: Số tiền gửi phải lớn hơn 0.");
+            System.out.println("Invalid withdrawal amount.");
         }
     }
 
-   
-    public void w(double a) { 
-        if (w >= MAX_WITHDRAWALS) {
-            System.out.println("Rút " + formatCurrency(a) + " - Lỗi: Bạn đã đạt giới hạn rút tiền tháng này.");
-        } else if (a > 0 && a <= b) {
-            b -= a;
-            w++;
-            logTransaction("Withdraw", a);
-            System.out.println("Đã rút " + formatCurrency(a));
-        } else {
-            System.out.println("Lỗi: Số tiền rút không hợp lệ hoặc vượt quá số dư.");
+    public void applyMonthlyInterest() {
+        double interest = balance * monthlyInterestRate;
+        balance += interest;
+        transactionHistory.add(new Transaction("Interest Applied", interest));
+    }
+
+    public void printTransactionHistory() {
+        System.out.println("\nTransaction History:");
+        for (int i = 0; i < transactionHistory.size(); i++) {
+            System.out.println((i + 1) + ". " + transactionHistory.get(i));
         }
     }
 
-  
-    public void a() { 
-        double i = b * m / 100; 
-        b += i;
-        System.out.println("Số dư sau khi cộng lãi: " + formatCurrency(b));
-    }
-
-    
-    private void logTransaction(String type, double amount) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String date = sdf.format(new Date());
-        String transaction = type + " - " + formatCurrency(amount) + " - " + date;
-        t.add(transaction);
-    }
-
-    public void p() {
-        System.out.println("Lịch sử giao dịch:");
-        int index = 1;
-        for (String transaction : t) {
-            System.out.println(index + ". " + transaction);
-            index++;
-        }
-    }
-
-    
-    public void b() { 
-        System.out.println("Số dư hiện tại: " + formatCurrency(b));
-    }
-
-    private String formatCurrency(double amount) {
-        return String.format("%,.0f VNĐ", amount);
+    public double getBalance() {
+        return balance;
     }
 }
 
 public class EX5_7_Sol {
     public static void main(String[] args) {
-       
-        BankAccount a = new BankAccount("Nguyễn Văn A", 5000000, 0.5); // a for account
+        BankAccount account = new BankAccount("Nguyen Van A", 5000000, 0.0055);
 
-        System.out.println("Tạo tài khoản mới: Nguyễn Văn A");
-        System.out.println("Số dư ban đầu: " + a.formatCurrency(5000000));
+        // Use getAccountHolder() instead of directly accessing accountHolder
+        System.out.println("Created new account: " + account.getAccountHolder());
+        System.out.println("Initial balance: " + String.format("%,.0f", account.getBalance()) + " VND");
 
-        
-        a.w(500000); 
-        a.w(500000); 
+        // Perform transactions
+        account.deposit(1000000);
+        account.withdraw(500000);
+        account.withdraw(500000); // Attempting to withdraw again beyond limit
+        account.withdraw(500000); // Will exceed withdrawal limit
 
-        
-        a.b();
+        System.out.println("\nCurrent balance: " + String.format("%,.0f", account.getBalance()) + " VND");
 
-        
-        a.p();
+        // Apply monthly interest
+        account.applyMonthlyInterest();
+        System.out.println("\nBalance after interest: " + String.format("%,.0f", account.getBalance()) + " VND");
 
-  
-        a.a();
+        // Print transaction history
+        account.printTransactionHistory();
     }
 }
